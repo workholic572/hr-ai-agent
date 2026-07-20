@@ -405,6 +405,8 @@ if menu_selection == "Executive Summary":
                                     st.success(f"Opening report: {pdf_filename}")
                                 else:
                                     st.info("📥 Use the Download button to get your PDF report. Direct file opening is only available when running locally on Windows.")
+                            except Exception as e:
+                                st.error(f"Could not open file: {e}")
                 except Exception as e:
                     st.error(f"Error generating PDF report: {e}")
                     logger.error(f"PDF generation failed: {e}", exc_info=True)
