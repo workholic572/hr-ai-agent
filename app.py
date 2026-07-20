@@ -1100,6 +1100,59 @@ elif menu_selection == "Data Ingestion":
             st.write("Please correct the following errors and re-upload:")
             st.dataframe(pd.DataFrame(report["errors"]), use_container_width=True)
             
+            # Quick-fix logic: extract unrecognized standard values and offer automatic addition
+            try:
+                errors_df = pd.DataFrame(report["errors"])
+                unrecognized_items = errors_df[errors_df["message"].str.contains("Unrecognized", na=False)]
+                
+                if not unrecognized_items.empty:
+                    st.write("---")
+                    st.info("💡 **Quick Fix:** Some columns contain values not present in your System Standards. You can add them automatically below:")
+                    
+                    depts_to_add = unrecognized_items[unrecognized_items["column"] == "Department"]["value"].dropna().unique().tolist()
+                    positions_to_add = unrecognized_items[unrecognized_items["column"] == "Position"]["value"].dropna().unique().tolist()
+                    projects_to_add = unrecognized_items[unrecognized_items["column"] == "Project"]["value"].dropna().unique().tolist()
+                    
+                    if depts_to_add:
+                        st.write(f"- **Departments to add:** {depts_to_add}")
+                    if positions_to_add:
+                        st.write(f"- **Positions to add:** {positions_to_add}")
+                    if projects_to_add:
+                        st.write(f"- **Projects to add:** {projects_to_add}")
+                        
+                    if st.button("➕ Add Unrecognized Values to System Standards"):
+                        from config.settings import save_standards_registry
+                        import json
+                        from pathlib import Path
+                        
+                        registry_path = Path("config/standards_registry.json")
+                        try:
+                            with open(registry_path, "r") as f:
+                                registry = json.load(f)
+                        except:
+                            registry = {"departments": [], "positions": [], "projects": []}
+                            
+                        added_count = 0
+                        for d in depts_to_add:
+                            if d not in registry["departments"]:
+                                registry["departments"].append(d)
+                                added_count += 1
+                        for p in positions_to_add:
+                            if p not in registry["positions"]:
+                                registry["positions"].append(p)
+                                added_count += 1
+                        for pr in projects_to_add:
+                            if pr not in registry["projects"]:
+                                registry["projects"].append(pr)
+                                added_count += 1
+                                
+                        if added_count > 0:
+                            save_standards_registry(registry)
+                            st.success(f"🎉 Successfully added {added_count} new standard values! Re-validating file...")
+                            st.rerun()
+            except Exception as quickfix_err:
+                logger.error(f"Error rendering standards quick-fix: {quickfix_err}", exc_info=True)
+            
         # Clean up temp file
         try:
             file_path.unlink()
