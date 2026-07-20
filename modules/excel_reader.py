@@ -230,10 +230,13 @@ class ExcelReader:
                     "headcount": headcount
                 })
 
+        import streamlit as st
+        st.write(f"🔍 Debug Info: parsed valid_rows count: {len(valid_rows)}")
 
         # ── FUZZY NORMALISATION & STRICT VALIDATION of Project ───────────────────
         raw_projects = [r["project"] for r in valid_rows]
         project_standards = STANDARDS_REGISTRY.get("projects", [])
+        st.write(f"🔍 Debug Info: STANDARDS_REGISTRY projects: {project_standards}")
         proj_map = normalize_field_values(raw_projects, standards=project_standards)
         
         final_valid_rows = []
@@ -261,6 +264,7 @@ class ExcelReader:
                     "message": f"Auto-corrected to '{canon}'"
                 })
 
+        st.write(f"🔍 Debug Info: final_valid_rows count: {len(final_valid_rows)} | errors count: {len(report['errors'])}")
         report["valid_rows_count"] = len(final_valid_rows)
         report["data"] = final_valid_rows
 

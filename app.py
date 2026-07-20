@@ -99,7 +99,7 @@ st.markdown("""
 
 # Helper function to initialize helpers (v1.1 - hot reload modules)
 @st.cache_resource
-def get_services(dummy_version="1.2"):
+def get_services(dummy_version="1.4"):
     import importlib
     import database.db_helper
     import modules.turnover_engine
@@ -128,7 +128,7 @@ def get_services(dummy_version="1.2"):
     summary = SummaryGenerator(db_helper=db, turnover_engine=turnover, resignation_analytics=analytics)
     return db, reader, hc_reader, turnover, analytics, classifier, summary
 
-db, reader, hc_reader, turnover, analytics, classifier, summary = get_services(dummy_version="1.3")
+db, reader, hc_reader, turnover, analytics, classifier, summary = get_services(dummy_version="1.4")
 
 # --- SIDEBAR FILTERS ---
 st.sidebar.image("https://placehold.co/300x80/1a365d/ffffff?text=The+Monal+Group&font=outfit", use_column_width=True)
