@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Dict, Any, List, Tuple, Optional
 from datetime import datetime
 
-from config.settings import EXPECTED_HEADCOUNT_COLUMNS, EXPECTED_LEAVERS_COLUMNS, STANDARDS_REGISTRY
+from config.settings import EXPECTED_HEADCOUNT_COLUMNS, EXPECTED_LEAVERS_COLUMNS, load_standards_registry
 from database.db_helper import DBHelper
 
 logger = logging.getLogger(__name__)
@@ -234,8 +234,9 @@ class ExcelReader:
         st.write(f"🔍 Debug Info: parsed valid_rows count: {len(valid_rows)}")
 
         # ── FUZZY NORMALISATION & STRICT VALIDATION of Project ───────────────────
+        _registry = load_standards_registry()  # Re-read from disk each time
         raw_projects = [r["project"] for r in valid_rows]
-        project_standards = STANDARDS_REGISTRY.get("projects", [])
+        project_standards = _registry.get("projects", [])
         st.write(f"🔍 Debug Info: STANDARDS_REGISTRY projects: {project_standards}")
         proj_map = normalize_field_values(raw_projects, standards=project_standards)
         
@@ -527,9 +528,10 @@ class ExcelReader:
         raw_depts = [r["department"] for r in valid_rows]
         raw_positions = [r["position"] for r in valid_rows]
 
-        proj_standards = STANDARDS_REGISTRY.get("projects", [])
-        dept_standards = STANDARDS_REGISTRY.get("departments", [])
-        pos_standards = STANDARDS_REGISTRY.get("positions", [])
+        _registry = load_standards_registry()  # Re-read from disk each time
+        proj_standards = _registry.get("projects", [])
+        dept_standards = _registry.get("departments", [])
+        pos_standards = _registry.get("positions", [])
 
         proj_map = normalize_field_values(raw_projects, standards=proj_standards)
         dept_map = normalize_field_values(raw_depts, standards=dept_standards)
