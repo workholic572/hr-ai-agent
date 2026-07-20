@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual Environment
+venv/
+env/
+.env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+logs/*.log
+
+# Database (will be recreated on cloud)
+data/processed/*.db
+
+# Temp uploads
+data/processed/temp_upload/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Reports (generated at runtime)
+reports/pdf/*.pdf
+reports/excel/*.xlsx
+
+# Scratch
+scratch/
