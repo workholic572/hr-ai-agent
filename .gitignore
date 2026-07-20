@@ -38,3 +38,6 @@ reports/excel/*.xlsx
 
 # Scratch
 scratch/
+
+# Streamlit secrets
+.streamlit/secrets.toml
