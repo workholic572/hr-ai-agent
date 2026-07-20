@@ -50,15 +50,35 @@ class DBHelper:
         """
         if self._mode == "postgres":
             import psycopg2
-            conn = psycopg2.connect(self._pg_url)
+            url = self._pg_url.strip().strip("'\"")
+            
+            # Mask password for safe logging/display
+            masked_url = url
             try:
+                if "@" in url:
+                    parts = url.split("@")
+                    credentials = parts[0].split(":")
+                    if len(credentials) > 2:
+                        masked_url = f"{credentials[0]}:{credentials[1]}:****@{parts[1]}"
+            except Exception:
+                pass
+
+            try:
+                conn = psycopg2.connect(url)
                 yield conn
                 conn.commit()
-            except Exception:
-                conn.rollback()
-                raise
+            except Exception as e:
+                logger.error(f"Failed to connect to PostgreSQL database using {masked_url}: {e}")
+                # Raise a cleaner error showing the target host and port to help user debug firewall blocks
+                raise RuntimeError(
+                    f"PostgreSQL connection failed to {masked_url.split('@')[-1] if '@' in masked_url else masked_url}. "
+                    f"Error: {e}"
+                ) from e
             finally:
-                conn.close()
+                try:
+                    conn.close()
+                except Exception:
+                    pass
         else:
             import sqlite3
             conn = sqlite3.connect(self._sqlite_path)
