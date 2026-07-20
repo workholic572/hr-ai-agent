@@ -128,7 +128,7 @@ def get_services(dummy_version="1.4"):
     summary = SummaryGenerator(db_helper=db, turnover_engine=turnover, resignation_analytics=analytics)
     return db, reader, hc_reader, turnover, analytics, classifier, summary
 
-db, reader, hc_reader, turnover, analytics, classifier, summary = get_services(dummy_version="1.5")
+db, reader, hc_reader, turnover, analytics, classifier, summary = get_services(dummy_version="1.6")
 
 # --- SIDEBAR FILTERS ---
 st.sidebar.image("https://placehold.co/300x80/1a365d/ffffff?text=The+Monal+Group&font=outfit", use_column_width=True)
