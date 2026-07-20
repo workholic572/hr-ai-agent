@@ -223,6 +223,14 @@ class ExcelReader:
                     })
                     row_has_error = True
 
+            if not row_has_error:
+                valid_rows.append({
+                    "project": project,
+                    "record_month": record_month,
+                    "headcount": headcount
+                })
+
+
         # ── FUZZY NORMALISATION & STRICT VALIDATION of Project ───────────────────
         raw_projects = [r["project"] for r in valid_rows]
         project_standards = STANDARDS_REGISTRY.get("projects", [])
