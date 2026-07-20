@@ -149,6 +149,14 @@ try:
 except Exception as secrets_err:
     st.sidebar.error(f"Error checking secrets: {secrets_err}")
 
+try:
+    from config.settings import load_standards_registry
+    depts = load_standards_registry().get("departments", [])
+    st.sidebar.info(f"📋 Registered Depts: {depts}")
+except Exception as reg_err:
+    st.sidebar.error(f"Error loading registry: {reg_err}")
+
+
 st.sidebar.title("HR Analytics Engine")
 
 # Fetch unique filters from DB dynamically
