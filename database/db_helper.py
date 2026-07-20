@@ -522,7 +522,7 @@ class CachedDBHelper(DBHelper):
         import streamlit as st
         @st.cache_data(ttl=600)
         def _cached_get_projects(_self_db):
-            return super(CachedDBHelper, _self_db).get_projects()
+            return DBHelper.get_projects(_self_db)
         return _cached_get_projects(self)
 
     def get_headcount_history(
@@ -534,7 +534,7 @@ class CachedDBHelper(DBHelper):
         import streamlit as st
         @st.cache_data(ttl=600)
         def _cached_get_headcount_history(_self_db, project_name, start_month, end_month):
-            return super(CachedDBHelper, _self_db).get_headcount_history(project_name, start_month, end_month)
+            return DBHelper.get_headcount_history(_self_db, project_name, start_month, end_month)
         return _cached_get_headcount_history(self, project_name, start_month, end_month)
 
     def get_average_headcount(
@@ -546,7 +546,7 @@ class CachedDBHelper(DBHelper):
         import streamlit as st
         @st.cache_data(ttl=600)
         def _cached_get_average_headcount(_self_db, project_name, start_month, end_month):
-            return super(CachedDBHelper, _self_db).get_average_headcount(project_name, start_month, end_month)
+            return DBHelper.get_average_headcount(_self_db, project_name, start_month, end_month)
         return _cached_get_average_headcount(self, project_name, start_month, end_month)
 
     def get_project_averages(
@@ -557,7 +557,7 @@ class CachedDBHelper(DBHelper):
         import streamlit as st
         @st.cache_data(ttl=600)
         def _cached_get_project_averages(_self_db, start_month, end_month):
-            return super(CachedDBHelper, _self_db).get_project_averages(start_month, end_month)
+            return DBHelper.get_project_averages(_self_db, start_month, end_month)
         return _cached_get_project_averages(self, start_month, end_month)
 
     def get_leavers_summary(
@@ -569,7 +569,7 @@ class CachedDBHelper(DBHelper):
         import streamlit as st
         @st.cache_data(ttl=600)
         def _cached_get_leavers_summary(_self_db, project_name, start_month, end_month):
-            return super(CachedDBHelper, _self_db).get_leavers_summary(project_name, start_month, end_month)
+            return DBHelper.get_leavers_summary(_self_db, project_name, start_month, end_month)
         return _cached_get_leavers_summary(self, project_name, start_month, end_month)
 
     def get_leavers_count_by_project_month(
@@ -580,7 +580,7 @@ class CachedDBHelper(DBHelper):
         import streamlit as st
         @st.cache_data(ttl=600)
         def _cached_get_leavers_count_by_project_month(_self_db, start_month, end_month):
-            return super(CachedDBHelper, _self_db).get_leavers_count_by_project_month(start_month, end_month)
+            return DBHelper.get_leavers_count_by_project_month(_self_db, start_month, end_month)
         return _cached_get_leavers_count_by_project_month(self, start_month, end_month)
 
 
