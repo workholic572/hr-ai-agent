@@ -54,6 +54,16 @@ def normalize_field_values(values: List[str], standards: List[str] = None, cutof
     for val in unique_cleaned:
         val_lower = val.lower()
         
+        # 0. Check exact case-insensitive match against standards
+        exact_match = None
+        for std in standards:
+            if std.lower() == val_lower:
+                exact_match = std
+                break
+        if exact_match:
+            cleaned_to_canonical[val] = exact_match
+            continue
+            
         # 1. Check exact aliases first
         if val_lower in ALIASES:
             cleaned_to_canonical[val] = ALIASES[val_lower]
