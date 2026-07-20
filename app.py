@@ -133,29 +133,6 @@ db, reader, hc_reader, turnover, analytics, classifier, summary = get_services(d
 # --- SIDEBAR FILTERS ---
 st.sidebar.image("https://placehold.co/300x80/1a365d/ffffff?text=The+Monal+Group&font=outfit", use_column_width=True)
 
-# Secret Diagnostics (Debug only, safely masked)
-try:
-    if st.secrets:
-        keys = list(st.secrets.keys())
-        st.sidebar.info(f"🔑 Secrets keys loaded: {keys}")
-        if "supabase_url" in keys:
-            url_val = st.secrets["supabase_url"]
-            has_pooler = "pooler" in url_val or "aws-0" in url_val
-            st.sidebar.success(f"Supabase secret detected! Pooler: {has_pooler}")
-        else:
-            st.sidebar.error("supabase_url secret is missing from Streamlit Cloud Secrets!")
-    else:
-        st.sidebar.error("st.secrets is completely empty!")
-except Exception as secrets_err:
-    st.sidebar.error(f"Error checking secrets: {secrets_err}")
-
-try:
-    from config.settings import load_standards_registry
-    depts = load_standards_registry().get("departments", [])
-    st.sidebar.info(f"📋 Registered Depts: {depts}")
-except Exception as reg_err:
-    st.sidebar.error(f"Error loading registry: {reg_err}")
-
 
 st.sidebar.title("HR Analytics Engine")
 
@@ -306,7 +283,7 @@ db_is_empty = df_leavers_raw.empty
 st.markdown(f"""
 <div class="title-container">
     <h1>The Monal Group — HR Intelligence</h1>
-    <p>AI-Powered Turnover Analytics & Talent Insights Dashboard | Period: {period_label}</p>
+    <p>Turnover Analytics &amp; Talent Insights Dashboard | Period: {period_label}</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -979,15 +956,6 @@ elif menu_selection == "Monthly Comparison":
 elif menu_selection == "Data Ingestion":
     st.subheader("📥 Excel Data Ingestion Pipeline")
 
-    # ⚠️ Streamlit Cloud Ephemeral Filesystem Warning
-    import platform
-    if not os.path.exists("/mount/src") is False or os.path.exists("/mount/src"):
-        st.warning(
-            "⚠️ **Streamlit Cloud Notice:** This app runs on an ephemeral filesystem — "
-            "the database resets whenever the app restarts or redeploys. "
-            "You will need to **re-upload your headcount and leavers files** after each restart. "
-            "For persistent storage, consider connecting a cloud database (e.g. Supabase, PlanetScale)."
-        )
     
     st.markdown("""
     Upload monthly files to process headcount and leavers lists. 
@@ -1044,14 +1012,6 @@ elif menu_selection == "Data Ingestion":
         
         # Parse and validate
         if upload_type == "Headcount":
-            # Troubleshoot helper: print the raw Excel structure if it yields 0 records
-            try:
-                raw_df = pd.read_excel(file_path)
-                st.write(f"🔍 Debug Info: Raw file columns: {list(raw_df.columns)} | Shape: {raw_df.shape}")
-                st.dataframe(raw_df.head(5))
-            except Exception as e:
-                st.write(f"Debug Info Error reading file: {e}")
-            
             report = reader.parse_and_validate_headcount(file_path)
         else:
             report = reader.parse_and_validate_leavers(file_path)
