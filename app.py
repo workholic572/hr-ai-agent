@@ -1060,27 +1060,35 @@ elif menu_selection == "Data Ingestion":
             st.dataframe(pd.DataFrame(report["data"]).head(10), use_container_width=True)
             
             if st.button("Commit to Database"):
+                st.write("🔄 Commit process started...")
                 with st.spinner("Writing data and executing classification..."):
-                    # Process file writes to DB
-                    if upload_type == "Headcount":
-                        for rec in report["data"]:
-                            db.insert_headcount(rec["project"], rec["record_month"], rec["headcount"])
-                    else:
-                        for rec in report["data"]:
-                            db.insert_leaver(rec)
-                        # Run batch classification
-                        classifier.classify_unprocessed_leavers()
-                        
-                    st.success("🎉 Data successfully written to the database! Refreshing dashboard...")
-                    st.rerun()
+                    try:
+                        # Process file writes to DB
+                        if upload_type == "Headcount":
+                            for rec in report["data"]:
+                                db.insert_headcount(rec["project"], rec["record_month"], rec["headcount"])
+                        else:
+                            for rec in report["data"]:
+                                db.insert_leaver(rec)
+                            # Run batch classification
+                            classifier.classify_unprocessed_leavers()
+                            
+                        st.success("🎉 Data successfully written to the database! Refreshing dashboard...")
+                        st.rerun()
+                    except Exception as commit_err:
+                        st.error(f"❌ Database Commit Failed: {commit_err}")
+                        logger.error(f"Database commit error: {commit_err}", exc_info=True)
         else:
             st.error(f"❌ File Validation Failed! Errors detected in the spreadsheet.")
             st.write("Please correct the following errors and re-upload:")
             st.dataframe(pd.DataFrame(report["errors"]), use_container_width=True)
             
         # Clean up temp file
-        file_path.unlink()
-        temp_dir.rmdir()
+        try:
+            file_path.unlink()
+            temp_dir.rmdir()
+        except Exception:
+            pass
 
 elif menu_selection == "Data Quality Reports":
     st.subheader("📋 System Quality Audits")
