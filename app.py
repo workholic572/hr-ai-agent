@@ -953,6 +953,16 @@ elif menu_selection == "Monthly Comparison":
 
 elif menu_selection == "Data Ingestion":
     st.subheader("📥 Excel Data Ingestion Pipeline")
+
+    # ⚠️ Streamlit Cloud Ephemeral Filesystem Warning
+    import platform
+    if not os.path.exists("/mount/src") is False or os.path.exists("/mount/src"):
+        st.warning(
+            "⚠️ **Streamlit Cloud Notice:** This app runs on an ephemeral filesystem — "
+            "the database resets whenever the app restarts or redeploys. "
+            "You will need to **re-upload your headcount and leavers files** after each restart. "
+            "For persistent storage, consider connecting a cloud database (e.g. Supabase, PlanetScale)."
+        )
     
     st.markdown("""
     Upload monthly files to process headcount and leavers lists. 
@@ -1053,7 +1063,8 @@ elif menu_selection == "Data Ingestion":
                         # Run batch classification
                         classifier.classify_unprocessed_leavers()
                         
-                    st.success("🎉 Data successfully written to the database! Dashboard has been updated.")
+                    st.success("🎉 Data successfully written to the database! Refreshing dashboard...")
+                    st.rerun()
         else:
             st.error(f"❌ File Validation Failed! Errors detected in the spreadsheet.")
             st.write("Please correct the following errors and re-upload:")
