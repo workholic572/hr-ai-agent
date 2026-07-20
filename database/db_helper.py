@@ -516,7 +516,7 @@ class CachedDBHelper(DBHelper):
     Uses _self to bypass hashing of the helper class instance itself (which is not hashable).
     """
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        DBHelper.__init__(self, *args, **kwargs)
 
     def get_projects(self) -> List[Dict[str, Any]]:
         import streamlit as st
