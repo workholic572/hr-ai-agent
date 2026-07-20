@@ -19,7 +19,17 @@
     "Training & Development",
     "Project Management",
     "Business Development",
-    "Accounts"
+    "Accounts",
+    "Kitchen",
+    "Housekeeping",
+    "Service",
+    "Store",
+    "KOT",
+    "Front Office",
+    "F&B",
+    "Maintenance",
+    "Banquet",
+    "Garden"
   ],
   "positions": [
     "Manager",
@@ -41,7 +51,20 @@
     "Team Lead",
     "Specialist",
     "Associate",
-    "Intern"
+    "Intern",
+    "Helper",
+    "House Keeper",
+    "Waiter",
+    "Cook",
+    "Chef",
+    "Steward",
+    "Receptionist",
+    "Captain",
+    "Cashier",
+    "Guard",
+    "Driver",
+    "Gardener",
+    "Commi"
   ],
   "projects": [
     "Café Baradari",
