@@ -548,6 +548,9 @@ class ExcelReader:
         pos_map = normalize_field_values(raw_positions, standards=pos_standards)
 
         final_valid_rows = []
+        import streamlit as st
+        st.write(f"🔍 DEBUG: raw_depts={list(set(raw_depts))} | KOT in standards={'KOT' in dept_standards}")
+        st.write(f"🔍 DEBUG: dept_map={dept_map}")
         for rec in valid_rows:
             orig_proj = rec["project"]
             canon_proj = proj_map.get(orig_proj, orig_proj)
