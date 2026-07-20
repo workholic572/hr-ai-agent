@@ -1019,6 +1019,14 @@ elif menu_selection == "Data Ingestion":
         
         # Parse and validate
         if upload_type == "Headcount":
+            # Troubleshoot helper: print the raw Excel structure if it yields 0 records
+            try:
+                raw_df = pd.read_excel(file_path)
+                st.write(f"🔍 Debug Info: Raw file columns: {list(raw_df.columns)} | Shape: {raw_df.shape}")
+                st.dataframe(raw_df.head(5))
+            except Exception as e:
+                st.write(f"Debug Info Error reading file: {e}")
+            
             report = reader.parse_and_validate_headcount(file_path)
         else:
             report = reader.parse_and_validate_leavers(file_path)
