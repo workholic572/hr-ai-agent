@@ -132,6 +132,23 @@ db, reader, hc_reader, turnover, analytics, classifier, summary = get_services(d
 
 # --- SIDEBAR FILTERS ---
 st.sidebar.image("https://placehold.co/300x80/1a365d/ffffff?text=The+Monal+Group&font=outfit", use_column_width=True)
+
+# Secret Diagnostics (Debug only, safely masked)
+try:
+    if st.secrets:
+        keys = list(st.secrets.keys())
+        st.sidebar.info(f"🔑 Secrets keys loaded: {keys}")
+        if "supabase_url" in keys:
+            url_val = st.secrets["supabase_url"]
+            has_pooler = "pooler" in url_val or "aws-0" in url_val
+            st.sidebar.success(f"Supabase secret detected! Pooler: {has_pooler}")
+        else:
+            st.sidebar.error("supabase_url secret is missing from Streamlit Cloud Secrets!")
+    else:
+        st.sidebar.error("st.secrets is completely empty!")
+except Exception as secrets_err:
+    st.sidebar.error(f"Error checking secrets: {secrets_err}")
+
 st.sidebar.title("HR Analytics Engine")
 
 # Fetch unique filters from DB dynamically
