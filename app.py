@@ -10,7 +10,7 @@ import os
 import logging.config
 
 from config.settings import get_logging_config, STANDARD_CATEGORIES, EXPECTED_HEADCOUNT_COLUMNS, EXPECTED_LEAVERS_COLUMNS
-from database.db_helper import DBHelper
+from database.db_helper import DBHelper, CachedDBHelper
 from modules.excel_reader import ExcelReader
 from modules.headcount_reader import HeadcountReader
 from modules.turnover_engine import TurnoverEngine
@@ -119,7 +119,7 @@ def get_services(dummy_version="1.4"):
     importlib.reload(modules.summary_generator)
     importlib.reload(modules.pdf_generator)
     
-    db = DBHelper()
+    db = CachedDBHelper()
     reader = ExcelReader(db_helper=db)
     hc_reader = HeadcountReader(db_helper=db, excel_reader=reader)
     turnover = TurnoverEngine(db_helper=db)
@@ -1090,6 +1090,8 @@ elif menu_selection == "Data Ingestion":
                             # Run batch classification
                             classifier.classify_unprocessed_leavers()
                             
+                        # Clear Streamlit cache data to reload new dataset
+                        st.cache_data.clear()
                         st.success("🎉 Data successfully written to the database! Refreshing dashboard...")
                         st.rerun()
                     except Exception as commit_err:
@@ -1148,6 +1150,7 @@ elif menu_selection == "Data Ingestion":
                                 
                         if added_count > 0:
                             save_standards_registry(registry)
+                            st.cache_data.clear()  # Clear cache
                             st.success(f"🎉 Successfully added {added_count} new standard values! Re-validating file...")
                             st.rerun()
             except Exception as quickfix_err:
@@ -1232,6 +1235,7 @@ elif menu_selection == "System Configurations":
                 if new_item and new_item not in registry[key]:
                     registry[key].append(new_item.strip())
                     save_standards_registry(registry)
+                    st.cache_data.clear()  # Clear cache
                     st.success(f"Added '{new_item}'")
                     st.rerun()
         with c2:
@@ -1240,6 +1244,7 @@ elif menu_selection == "System Configurations":
                 if del_item and del_item in registry[key]:
                     registry[key].remove(del_item)
                     save_standards_registry(registry)
+                    st.cache_data.clear()  # Clear cache
                     st.success(f"Removed '{del_item}'")
                     st.rerun()
 
