@@ -33,7 +33,10 @@ def _detect_db_mode():
 class DBHelper:
     def __init__(self, db_path: str = None):
         from config.settings import DB_PATH as _DB_PATH
-        self._mode, self._pg_url = _detect_db_mode()
+        if db_path:
+            self._mode, self._pg_url = "sqlite", None
+        else:
+            self._mode, self._pg_url = _detect_db_mode()
         self._sqlite_path = db_path or str(_DB_PATH)
         logger.info(f"DBHelper initialised in '{self._mode}' mode.")
         self.init_db()

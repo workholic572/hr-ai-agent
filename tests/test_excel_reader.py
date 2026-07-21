@@ -45,6 +45,7 @@ def generate_mock_data():
             "Date of Joining": "2024-01-15",
             "Date of Leaving": "2026-06-15",
             "Length of Service": 29.0,
+            "Status": "Resigned",
             "Reason": "Got new job"
         },
         {
@@ -56,6 +57,7 @@ def generate_mock_data():
             "Date of Joining": "2025-03-01",
             "Date of Leaving": "2026-06-01",
             "Length of Service": 15.0,
+            "Status": "Resigned",
             "Reason": "Personal reasons"
         }
     ])
@@ -71,6 +73,7 @@ def generate_mock_data():
             "Date of Joining": "2024-01-15",
             "Date of Leaving": "2026-06-15",
             "Length of Service": 29.0,
+            "Status": "Resigned",
             "Reason": "Better package"
         },
         {
@@ -82,6 +85,7 @@ def generate_mock_data():
             "Date of Joining": "2024-01-15",
             "Date of Leaving": "2026-06-15",
             "Length of Service": 29.0,
+            "Status": "Resigned",
             "Reason": "Same ID"
         },
         {
@@ -93,6 +97,7 @@ def generate_mock_data():
             "Date of Joining": "2025-05-01",
             "Date of Leaving": "2024-05-01",  # Date of Leaving before Joining
             "Length of Service": -12.0,  # Negative service
+            "Status": "Resigned",
             "Reason": ""
         }
     ])
@@ -168,9 +173,10 @@ def run_tests():
     
     # Clean up temp test data
     for file in [hc_valid_path, hc_invalid_path, lv_valid_path, lv_invalid_path]:
-        file.unlink()
-    db_path.unlink()
-    test_dir.rmdir()
+        file.unlink(missing_ok=True)
+    db_path.unlink(missing_ok=True)
+    import shutil
+    shutil.rmtree(test_dir, ignore_errors=True)
     logger.info("Cleanup completed successfully. All tests passed!")
 
 if __name__ == "__main__":

@@ -137,8 +137,9 @@ def run_tests():
     logger.info("Rolling 12 Month turnover calculation verified successfully!")
 
     # Clean up temp test data
-    db_path.unlink()
-    test_dir.rmdir()
+    db_path.unlink(missing_ok=True)
+    import shutil
+    shutil.rmtree(test_dir, ignore_errors=True)
     logger.info("Cleanup completed successfully. All Turnover Engine tests passed!")
 
 if __name__ == "__main__":

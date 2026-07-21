@@ -556,12 +556,7 @@ class PDFReportGenerator:
         story.append(bottom_accent)
         
         story.append(Spacer(1, 20))
-        story.append(Paragraph(
-            "<i>This report contains corporate turnover analysis for the Monal Group. "
-            "All figures are derived from uploaded headcount and leavers data. "
-            "Charts and insights reflect the selected reporting period.</i>",
-            body_small
-        ))
+
 
         story.append(PageBreak())
 
@@ -599,6 +594,7 @@ class PDFReportGenerator:
         # KPI Cards
         change_str = f"+{turnover_change}%" if turnover_change > 0 else f"{turnover_change}%"
         kpi_cards = self._build_kpi_card_row([
+            {"label": "TOTAL HEADCOUNT", "value": str(total_headcount)},
             {"label": "TOTAL DEPARTURES", "value": str(tot_dep)},
             {"label": "TURNOVER RATE", "value": f"{overall_turnover}%"},
             {"label": "VS PREVIOUS PERIOD", "value": change_str},
@@ -846,11 +842,11 @@ class PDFReportGenerator:
             story.append(Paragraph("5 &nbsp;&nbsp; Resignation Reasons", h1))
             story.append(self._section_divider())
             story.append(Spacer(1, 4))
-            story.append(Paragraph("5.1 &nbsp;&nbsp; Primary Attrition Reasons (AI Classified)", h2))
+            story.append(Paragraph("5.1 &nbsp;&nbsp; Primary Attrition Reasons (Classified)", h2))
             story.append(Paragraph(
-                "The AI classification engine categorizes each departure into standardized "
-                "separation reasons. This helps identify systemic patterns vs. isolated incidents. "
-                "The donut chart provides a quick visual of the separation category distribution.",
+                "Departures are categorized into standardized separation reasons to help identify "
+                "systemic patterns vs. isolated incidents. The donut chart provides a quick visual "
+                "of the separation category distribution.",
                 body
             ))
             story.append(Spacer(1, 4))
@@ -1006,90 +1002,148 @@ class PDFReportGenerator:
             )
             story.append(chart_tenure)
 
-            # ─── 7 Employee Explorer ────────────────────────────────────
+            # ─── 7 Terminations ────────────────────────────────────────────
             story.append(PageBreak())
-            story.append(Paragraph("7 &nbsp;&nbsp; Employee Explorer", h1))
+            story.append(Paragraph("7 &nbsp;&nbsp; Terminations", h1))
             story.append(self._section_divider())
             story.append(Spacer(1, 4))
-            story.append(Paragraph(
-                "Below is a high-level snapshot of the 5 most recent departures in the selected period. "
-                "Full employee rosters are maintained securely in the digital dashboard.", body
-            ))
-            story.append(Spacer(1, 6))
             
-            if "date_of_leaving" in df_lv.columns:
-                recent_leavers = df_lv.sort_values(by="date_of_leaving", ascending=False).head(5)
+            # Filter only terminated / dismissed employees
+            terminated_df = pd.DataFrame()
+            if not df_lv.empty:
+                term_mask = pd.Series([False] * len(df_lv), index=df_lv.index)
+                if "status" in df_lv.columns:
+                    term_mask = term_mask | df_lv["status"].astype(str).str.lower().str.contains(
+                        "terminat|dismiss|discharg", na=False, regex=True
+                    )
+                if "ai_category" in df_lv.columns:
+                    term_mask = term_mask | df_lv["ai_category"].astype(str).str.lower().str.contains(
+                        "terminat|dismiss|discharg", na=False, regex=True
+                    )
+                terminated_df = df_lv[term_mask].copy()
+            
+            if terminated_df.empty:
+                story.append(Paragraph(
+                    "No termination records were recorded during the selected reporting period.",
+                    body
+                ))
+            else:
+                story.append(Paragraph(
+                    f"A total of <b>{len(terminated_df)}</b> employee(s) were terminated or dismissed "
+                    "during the reporting period.", body
+                ))
+                story.append(Spacer(1, 6))
                 
-                emp_table_data = [[
+                term_table_data = [[
                     Paragraph("<b>Employee Name</b>", th),
                     Paragraph("<b>Project</b>", th),
+                    Paragraph("<b>Dept</b>", th),
                     Paragraph("<b>Position</b>", th),
+                    Paragraph("<b>Date of Joining</b>", th),
                     Paragraph("<b>Date of Leaving</b>", th),
-                    Paragraph("<b>Status</b>", th)
+                    Paragraph("<b>Tenure</b>", th),
+                    Paragraph("<b>Reason</b>", th),
                 ]]
                 
-                for _, row in recent_leavers.iterrows():
-                    emp_table_data.append([
-                        Paragraph(str(row.get("employee_name", "N/A")), td_bold),
-                        Paragraph(str(row.get("project_name", "N/A")), td),
-                        Paragraph(str(row.get("position", "N/A")), td),
-                        Paragraph(str(row.get("date_of_leaving", "N/A")), td),
-                        Paragraph(str(row.get("status", "N/A")), td)
-                    ])
+                for _, row in terminated_df.iterrows():
+                    # Format tenure
+                    tenure_months = row.get("length_of_service_months", 0)
+                    try:
+                        t_months = float(tenure_months)
+                        tenure_str = f"{round(t_months, 1)} mo"
+                    except:
+                        tenure_str = str(tenure_months)
                     
-                emp_table = Table(emp_table_data, colWidths=[2.0*inch, 1.5*inch, 1.5*inch, 1.2*inch, 1.0*inch])
-                emp_table.setStyle(base_table_style)
-                story.append(emp_table)
+                    # Format date fields
+                    def fmt_date(val):
+                        try:
+                            return pd.to_datetime(val).strftime("%d %b %Y")
+                        except:
+                            return str(val) if val else "N/A"
+                    
+                    reason = str(row.get("original_reason", "") or row.get("ai_category", "") or "N/A")
+                    if len(reason) > 50:
+                        reason = reason[:47] + "..."
+                    
+                    term_table_data.append([
+                        Paragraph(str(row.get("employee_name", "N/A")), td_bold),
+                        Paragraph(str(row.get("project_name", row.get("project", "N/A"))), td),
+                        Paragraph(str(row.get("department", "N/A")), td),
+                        Paragraph(str(row.get("position", "N/A")), td),
+                        Paragraph(fmt_date(row.get("date_of_joining")), td),
+                        Paragraph(fmt_date(row.get("date_of_leaving")), td),
+                        Paragraph(tenure_str, td),
+                        Paragraph(self._clean_text(reason), body_small),
+                    ])
+                
+                term_table = Table(
+                    term_table_data,
+                    colWidths=[1.3*inch, 0.9*inch, 0.7*inch, 0.9*inch, 0.8*inch, 0.8*inch, 0.5*inch, 1.3*inch]
+                )
+                term_table.setStyle(base_table_style)
+                story.append(term_table)
             
             story.append(Spacer(1, 10))
 
-            # ─── 4.6 Month-by-Month Trend (if multi-month) ────────────────
+            # ─── 8 Month-by-Month Trend ───────────────────────────────────────
             story.append(PageBreak())
             story.append(Paragraph("8 &nbsp;&nbsp; Monthly Comparison", h1))
             story.append(self._section_divider())
             story.append(Spacer(1, 4))
-            
-            if start_month != end_month and not df_lv.empty and "date_of_leaving" in df_lv.columns:
-                story.append(Paragraph(
-                    "The following table tracks departure volume across individual months "
-                    "within the reporting period, helping identify seasonal patterns or "
-                    "specific months with anomalous attrition spikes.", body
-                ))
-                story.append(Spacer(1, 4))
-                
-                df_lv["departure_month"] = pd.to_datetime(
-                    df_lv["date_of_leaving"], errors="coerce"
-                ).dt.to_period("M").astype(str)
-                
-                monthly = df_lv["departure_month"].value_counts().sort_index().reset_index()
-                monthly.columns = ["Month", "Departures"]
-                
+            story.append(Paragraph(
+                "The following table tracks departure volume across individual months "
+                "within the reporting period, helping identify seasonal patterns or "
+                "specific months with anomalous attrition spikes.", body
+            ))
+            story.append(Spacer(1, 4))
+
+            df_lv_all = pd.DataFrame(self.db_helper.get_leavers_summary())
+            if not df_lv_all.empty and "record_month" in df_lv_all.columns:
+                months_trend = sorted(df_lv_all["record_month"].dropna().unique().tolist())
                 month_table_data = [[
                     Paragraph("<b>Month</b>", th),
+                    Paragraph("<b>Adjusted Headcount</b>", th),
                     Paragraph("<b>Departures</b>", th),
-                    Paragraph("<b>Share (%)</b>", th)
+                    Paragraph("<b>Turnover Rate (%)</b>", th)
                 ]]
-                for _, row in monthly.iterrows():
-                    pct = f"{round(row['Departures'] / tot_dep * 100, 1)}%"
-                    month_table_data.append([
-                        Paragraph(str(row["Month"]), td_bold),
-                        Paragraph(str(row["Departures"]), td),
-                        Paragraph(pct, td)
-                    ])
                 
-                month_table = Table(month_table_data, colWidths=[2.5*inch, 2.0*inch, 2.5*inch])
+                m_names = []
+                m_rates = []
+
+                for m in months_trend:
+                    df_lv_m = df_lv_all[df_lv_all["record_month"] == m]
+                    tot_lv = len(df_lv_m)
+                    
+                    df_hc_adj = self.turnover_engine.get_adjusted_headcount(start_month=m, end_month=m)
+                    tot_hc_adj = float(df_hc_adj["headcount"].sum()) if not df_hc_adj.empty else 0.0
+                    
+                    rate = round((tot_lv / tot_hc_adj) * 100, 2) if tot_hc_adj > 0 else 0.0
+                    
+                    month_table_data.append([
+                        Paragraph(str(m), td_bold),
+                        Paragraph(f"{tot_hc_adj:,.1f}", td),
+                        Paragraph(str(tot_lv), td),
+                        Paragraph(f"{rate}%", td_danger if rate > 5.0 else td_bold)
+                    ])
+                    m_names.append(m)
+                    m_rates.append(rate)
+                
+                month_table = Table(month_table_data, colWidths=[1.8*inch, 1.8*inch, 1.6*inch, 1.8*inch])
                 month_table.setStyle(base_table_style)
                 story.append(month_table)
                 story.append(Spacer(1, 10))
                 
                 # Chart
-                story.append(Paragraph("Monthly Departure Volume", h3))
-                chart_month = self._build_horizontal_bar_chart(
-                    monthly["Month"].tolist(),
-                    monthly["Departures"].tolist(),
-                    title="Departure Count by Month"
-                )
-                story.append(chart_month)
+                if m_names:
+                    story.append(Paragraph("Monthly Turnover Rate Trend (%)", h3))
+                    chart_month = self._build_horizontal_bar_chart(
+                        m_names,
+                        m_rates,
+                        title="Monthly Turnover Rate (%)"
+                    )
+                    story.append(chart_month)
+            else:
+                story.append(Paragraph("No monthly data available for comparison.", body))
 
         # ═══════════════════════════════════════════════════════════════════
         # FINAL PAGE: DISCLAIMER
@@ -1103,21 +1157,22 @@ class PDFReportGenerator:
         story.append(disclaimer_accent)
         story.append(Spacer(1, 20))
         
-        story.append(Paragraph("Disclaimer &amp; Notes", ParagraphStyle(
+        story.append(Paragraph("Key Notes", ParagraphStyle(
             "DisclaimerTitle", parent=h2, alignment=TA_CENTER, textColor=self.c_text_light
         )))
         story.append(Spacer(1, 8))
         
         disclaimer_text = [
-            "This report was prepared by <b>Moazzam Baig</b>, Monal Group.",
-            "All turnover rates and analytical insights are derived from the uploaded headcount "
-            "rosters and leavers files for the selected reporting period.",
-            "Separation categories are based on pattern-matching of resignation reasons "
-            "and may require human validation for edge cases.",
             "Turnover rates are computed using the standard formula: "
-            "<i>(Departures / Average Headcount) x 100</i>.",
-            "This document is classified as <b>CONFIDENTIAL</b> and intended for internal "
-            "management use only. Do not distribute externally without authorization.",
+            "<i>(Departures &#247; Average Headcount) &#215; 100</i>.",
+            "Average headcount is derived by averaging the beginning and ending "
+            "headcount for the selected reporting period.",
+            "Separation categories are determined through pattern-matching of "
+            "submitted resignation reasons and may require validation for edge cases.",
+            "Month-over-Month (MoM) change reflects the percentage-point difference "
+            "in turnover rate compared to the immediately preceding month.",
+            "This document is classified as <b>CONFIDENTIAL</b> and intended for "
+            "internal management use only.",
         ]
         
         for line in disclaimer_text:

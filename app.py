@@ -367,8 +367,8 @@ if menu_selection == "Executive Summary":
         col_summary, col_kpis = st.columns([3, 2])
         
         with col_summary:
-            st.subheader("🤖 AI Executive Insights")
-            with st.spinner("AI is analyzing period metrics and drafting report..."):
+            st.subheader("📊 Executive Insights")
+            with st.spinner("Generating period metrics and drafting summary..."):
                 narrative = summary.generate_summary(start_month, end_month)
                 st.markdown(narrative)
                 
@@ -423,13 +423,13 @@ if menu_selection == "Executive Summary":
                 for d in top_data["departments"]:
                     st.write(f"- {d['name']}: {d['count']} departures ({d['percentage']}%)")
                     
-                st.markdown("**Top Departure Drivers (AI Classified):**")
+                st.markdown("**Top Departure Drivers (Classified):**")
                 for r in top_data["reasons"]:
                     st.write(f"- {r['name']}: {r['count']} departures ({r['percentage']}%)")
                     
                 # Small doughnut chart of reasons
                 df_reason_chart = df_lv_filtered["ai_category"].value_counts().reset_index()
-                fig = px.pie(df_reason_chart, values="count", names="ai_category", hole=0.4, title="Departures by AI Category", color_discrete_sequence=px.colors.qualitative.Pastel)
+                fig = px.pie(df_reason_chart, values="count", names="ai_category", hole=0.4, title="Departures by Separation Category", color_discrete_sequence=px.colors.qualitative.Pastel)
                 fig.update_layout(margin=dict(l=0, r=0, t=30, b=0), height=250)
                 st.plotly_chart(fig, use_container_width=True)
             else:
@@ -695,7 +695,7 @@ elif menu_selection == "Resignation Reasons":
         col_table, col_chart = st.columns([2, 3])
         
         with col_table:
-            st.markdown("#### Standard HR Categories (AI Classified)")
+            st.markdown("#### Standard HR Categories (Classified)")
             cat_counts = df_lv["ai_category"].value_counts().reset_index()
             cat_counts.columns = ["HR Category", "Departures"]
             cat_counts["Share (%)"] = (cat_counts["Departures"] / len(df_lv) * 100).round(1)
@@ -710,10 +710,10 @@ elif menu_selection == "Resignation Reasons":
         with col_chart:
             st.markdown("#### Departure Distribution by HR Category")
             ai_counts = df_lv["ai_category"].value_counts().reset_index()
-            ai_counts.columns = ["AI HR Category", "Count"]
+            ai_counts.columns = ["HR Category", "Count"]
             fig_ai = px.treemap(
                 ai_counts,
-                path=["AI HR Category"],
+                path=["HR Category"],
                 values="Count",
                 title="Departures by Standard HR Category",
                 color="Count",
