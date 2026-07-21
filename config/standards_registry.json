@@ -27,9 +27,7 @@
     "KOT",
     "Dishwashing",
     "Laundry",
-    "Front Office",
     "F&B",
-    "Maintenance",
     "Banquet",
     "Garden"
   ],
@@ -76,7 +74,10 @@
     "Guard",
     "Driver",
     "Gardener",
-    "Commi"
+    "Plumber"
+    "KOT Officer"
+    "Dispenser"
+    "Bar Man"
   ],
   "projects": [
     "Café Baradari",
