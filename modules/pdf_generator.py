@@ -1085,102 +1085,102 @@ class PDFReportGenerator:
             
             story.append(Spacer(1, 10))
 
-            # ─── 8 Month-by-Month Trend ───────────────────────────────────────
-            story.append(PageBreak())
-            story.append(Paragraph("8 &nbsp;&nbsp; Monthly Comparison", h1))
-            story.append(self._section_divider())
-            story.append(Spacer(1, 4))
-            story.append(Paragraph(
-                "The following table tracks departure volume across individual months "
-                "within the reporting period, helping identify seasonal patterns or "
-                "specific months with anomalous attrition spikes.", body
-            ))
-            story.append(Spacer(1, 4))
+        # ─── 8 Month-by-Month Trend ───────────────────────────────────────
+        story.append(PageBreak())
+        story.append(Paragraph("8 &nbsp;&nbsp; Monthly Comparison", h1))
+        story.append(self._section_divider())
+        story.append(Spacer(1, 4))
+        story.append(Paragraph(
+            "The following table tracks departure volume across individual months "
+            "within the reporting period, helping identify seasonal patterns or "
+            "specific months with anomalous attrition spikes.", body
+        ))
+        story.append(Spacer(1, 4))
 
-            # Fetch rolling metrics
-            rolling_metrics = {}
-            if end_month != "No Data Available":
-                try:
-                    rolling_metrics = self.turnover_engine.calculate_rolling_12_month_turnover(end_month)
-                except Exception as e:
-                    logger.warning(f"Could not calculate rolling 12M trend: {e}")
+        # Fetch rolling metrics
+        rolling_metrics = {}
+        if end_month != "No Data Available":
+            try:
+                rolling_metrics = self.turnover_engine.calculate_rolling_12_month_turnover(end_month)
+            except Exception as e:
+                logger.warning(f"Could not calculate rolling 12M trend: {e}")
 
-            if rolling_metrics:
-                story.append(Paragraph("Rolling 12-Month Indicator", h3))
-                story.append(Spacer(1, 4))
-                
-                # Card elements
-                card_data = [
-                    [
-                        Paragraph(f"<b>Period:</b> {rolling_metrics.get('period', 'N/A')}", td),
-                        Paragraph(f"<b>Average Headcount (Adjusted):</b> {rolling_metrics.get('avg_headcount', 'N/A')}", td),
-                    ],
-                    [
-                        Paragraph(f"<b>Total Departures (12M):</b> {rolling_metrics.get('leavers_count', 'N/A')}", td),
-                        Paragraph(f"<b>Rolling 12M Turnover:</b> <font color='{BRAND_DANGER}'><b>{rolling_metrics.get('turnover_rate', 'N/A')}%</b></font>", td),
-                    ]
+        if rolling_metrics:
+            story.append(Paragraph("Rolling 12-Month Indicator", h3))
+            story.append(Spacer(1, 4))
+            
+            # Card elements
+            card_data = [
+                [
+                    Paragraph(f"<b>Period:</b> {rolling_metrics.get('period', 'N/A')}", td),
+                    Paragraph(f"<b>Average Headcount (Adjusted):</b> {rolling_metrics.get('avg_headcount', 'N/A')}", td),
+                ],
+                [
+                    Paragraph(f"<b>Total Departures (12M):</b> {rolling_metrics.get('leavers_count', 'N/A')}", td),
+                    Paragraph(f"<b>Rolling 12M Turnover:</b> <font color='{BRAND_DANGER}'><b>{rolling_metrics.get('turnover_rate', 'N/A')}%</b></font>", td),
                 ]
-                card_table = Table(card_data, colWidths=[3.4*inch, 3.4*inch])
-                card_table.setStyle(TableStyle([
-                    ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor(BRAND_BG_ALT)),
-                    ('BOX', (0, 0), (-1, -1), 0.8, colors.HexColor(BRAND_BORDER)),
-                    ('INNERGRID', (0, 0), (-1, -1), 0.4, colors.HexColor(BRAND_BORDER)),
-                    ('TOPPADDING', (0, 0), (-1, -1), 8),
-                    ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
-                    ('LEFTPADDING', (0, 0), (-1, -1), 12),
-                    ('RIGHTPADDING', (0, 0), (-1, -1), 12),
-                ]))
-                story.append(card_table)
-                story.append(Spacer(1, 12))
+            ]
+            card_table = Table(card_data, colWidths=[3.4*inch, 3.4*inch])
+            card_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor(BRAND_BG_ALT)),
+                ('BOX', (0, 0), (-1, -1), 0.8, colors.HexColor(BRAND_BORDER)),
+                ('INNERGRID', (0, 0), (-1, -1), 0.4, colors.HexColor(BRAND_BORDER)),
+                ('TOPPADDING', (0, 0), (-1, -1), 8),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+                ('LEFTPADDING', (0, 0), (-1, -1), 12),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 12),
+            ]))
+            story.append(card_table)
+            story.append(Spacer(1, 12))
 
 
-            df_lv_all = pd.DataFrame(self.db_helper.get_leavers_summary())
-            if not df_lv_all.empty and "record_month" in df_lv_all.columns:
-                months_trend = sorted(df_lv_all["record_month"].dropna().unique().tolist())
-                month_table_data = [[
-                    Paragraph("<b>Month</b>", th),
-                    Paragraph("<b>Adjusted Headcount</b>", th),
-                    Paragraph("<b>Departures</b>", th),
-                    Paragraph("<b>Turnover Rate (%)</b>", th)
-                ]]
-                
-                m_names = []
-                m_rates = []
+        df_lv_all = pd.DataFrame(self.db_helper.get_leavers_summary())
+        if not df_lv_all.empty and "record_month" in df_lv_all.columns:
+            months_trend = sorted(df_lv_all["record_month"].dropna().unique().tolist())
+            month_table_data = [[
+                Paragraph("<b>Month</b>", th),
+                Paragraph("<b>Adjusted Headcount</b>", th),
+                Paragraph("<b>Departures</b>", th),
+                Paragraph("<b>Turnover Rate (%)</b>", th)
+            ]]
+            
+            m_names = []
+            m_rates = []
 
-                for m in months_trend:
-                    df_lv_m = df_lv_all[df_lv_all["record_month"] == m]
-                    tot_lv = len(df_lv_m)
-                    
-                    df_hc_adj = self.turnover_engine.get_adjusted_headcount(start_month=m, end_month=m)
-                    tot_hc_adj = float(df_hc_adj["headcount"].sum()) if not df_hc_adj.empty else 0.0
-                    
-                    rate = round((tot_lv / tot_hc_adj) * 100, 2) if tot_hc_adj > 0 else 0.0
-                    
-                    month_table_data.append([
-                        Paragraph(str(m), td_bold),
-                        Paragraph(f"{tot_hc_adj:,.1f}", td),
-                        Paragraph(str(tot_lv), td),
-                        Paragraph(f"{rate}%", td_danger if rate > 5.0 else td_bold)
-                    ])
-                    m_names.append(m)
-                    m_rates.append(rate)
+            for m in months_trend:
+                df_lv_m = df_lv_all[df_lv_all["record_month"] == m]
+                tot_lv = len(df_lv_m)
                 
-                month_table = Table(month_table_data, colWidths=[1.8*inch, 1.8*inch, 1.6*inch, 1.8*inch])
-                month_table.setStyle(base_table_style)
-                story.append(month_table)
-                story.append(Spacer(1, 10))
+                df_hc_adj = self.turnover_engine.get_adjusted_headcount(start_month=m, end_month=m)
+                tot_hc_adj = float(df_hc_adj["headcount"].sum()) if not df_hc_adj.empty else 0.0
                 
-                # Chart
-                if m_names:
-                    story.append(Paragraph("Monthly Turnover Rate Trend (%)", h3))
-                    chart_month = self._build_horizontal_bar_chart(
-                        m_names,
-                        m_rates,
-                        title="Monthly Turnover Rate (%)"
-                    )
-                    story.append(chart_month)
-            else:
-                story.append(Paragraph("No monthly data available for comparison.", body))
+                rate = round((tot_lv / tot_hc_adj) * 100, 2) if tot_hc_adj > 0 else 0.0
+                
+                month_table_data.append([
+                    Paragraph(str(m), td_bold),
+                    Paragraph(f"{tot_hc_adj:,.1f}", td),
+                    Paragraph(str(tot_lv), td),
+                    Paragraph(f"{rate}%", td_danger if rate > 5.0 else td_bold)
+                ])
+                m_names.append(m)
+                m_rates.append(rate)
+            
+            month_table = Table(month_table_data, colWidths=[1.8*inch, 1.8*inch, 1.6*inch, 1.8*inch])
+            month_table.setStyle(base_table_style)
+            story.append(month_table)
+            story.append(Spacer(1, 10))
+            
+            # Chart
+            if m_names:
+                story.append(Paragraph("Monthly Turnover Rate Trend (%)", h3))
+                chart_month = self._build_horizontal_bar_chart(
+                    m_names,
+                    m_rates,
+                    title="Monthly Turnover Rate (%)"
+                )
+                story.append(chart_month)
+        else:
+            story.append(Paragraph("No monthly data available for comparison.", body))
 
         # ═══════════════════════════════════════════════════════════════════
         # FINAL PAGE: DISCLAIMER
