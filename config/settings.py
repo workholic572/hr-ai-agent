@@ -60,7 +60,7 @@ STANDARD_CATEGORIES = [
     "Attendance / Discipline",
     "Termination",
     "Contract Completion",
-    "Left Without Notice",
+    "Left Without Information",
     "Other"
 ]
 
